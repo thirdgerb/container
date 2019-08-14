@@ -14,10 +14,9 @@ use ArrayAccess;
 
 /**
  * 模仿 illuminate 的 container,
- * 简化了部分, 主要是为了能够多实例兼容register
+ * 简化了部分功能, 主要是为了能够兼容更多的container
  *
- * Interface ContainerInterface
- * @package Container
+ * 注意, 要避免使用 匿名类, use($container) 等方式, 导致内存泄露.
  *
  * @see \Illuminate\Contracts\Container\Container
  */
@@ -36,6 +35,7 @@ interface ContainerContract extends Psr, ArrayAccess
 
     /**
      * Determine if the given abstract type has been bound.
+     *
      * 只检查当前容器, 不检查所有父容器.
      *
      * @param  string  $abstract
@@ -76,6 +76,8 @@ interface ContainerContract extends Psr, ArrayAccess
     /**
      * Register an existing instance as shared in the container.
      *
+     * 使用 instance 绑定的实例, 是多个请求级容器共享的.
+     *
      * @param  string  $abstract
      * @param  mixed   $instance
      * @return mixed
@@ -84,7 +86,10 @@ interface ContainerContract extends Psr, ArrayAccess
 
 
     /**
-     * share existing instance as shared in the container instance.
+     * share existing instance in the container instance.
+     *
+     * 用share 绑定的实例, 只在请求内部共享. 多个请求级容器相互隔离.
+     * 例如 $container->share(Request::class, $request);
      *
      * @param  string  $abstract
      * @param  mixed   $instance
@@ -120,17 +125,9 @@ interface ContainerContract extends Psr, ArrayAccess
     public function make(string $abstract, array $parameters = []);
 
     /**
-     * "Extend" an abstract type in the container.
+     * 用依赖注入的方式调用一个 callable.
+     * 与laravel 的区别在于, $parameters 允许用 interface => $instance 的方式注入临时依赖.
      *
-     * @param  string    $abstract
-     * @param  \Closure  $closure
-     * @return void
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function extend(string $abstract, Closure $closure) : void;
-
-    /**
      * @param callable $caller
      * @param array $parameters
      * @return mixed
