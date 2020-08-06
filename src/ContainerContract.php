@@ -128,12 +128,13 @@ interface ContainerContract extends Psr, ArrayAccess
      * 用依赖注入的方式调用一个 callable.
      * 与laravel 的区别在于, $parameters 允许用 interface => $instance 的方式注入临时依赖.
      *
-     * @param callable $caller
+     * @param callable|string $caller  caller 允许传入 Class::__invoke 类名, 先依赖注入创建实例, 然后对 invoke 方法进行依赖注入 call
+     *
      * @param array $parameters
      * @return mixed
      * @throws \ReflectionException
      * @throws BindingResolutionException
      */
-    public function call(callable $caller, array $parameters = []);
+    public function call($caller, array $parameters = []);
 
 }

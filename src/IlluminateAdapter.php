@@ -85,8 +85,9 @@ class IlluminateAdapter implements ContainerContract
         return $this->container->make($abstract, $parameters);
     }
 
-    public function call(callable $caller, array $parameters = [])
+    public function call($caller, array $parameters = [])
     {
+        $caller = BoundMethod::parseCaller($caller);
         if (BoundMethod::isClassNameWithNonStaticMethod($caller)) {
             $caller[0] = $this->container->make($caller[0]);
         }

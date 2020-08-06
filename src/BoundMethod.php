@@ -13,27 +13,59 @@ use ReflectionFunction;
  * 也去掉了 laravel 的 method binding
  *
  * 在 call 方法上做了优化, 现在调用 $container->call($callable, $parameters) 时
+ *
  * parameter中可以用 typehint => $resolved  注入可能的依赖, 让$callable 挑选.
+ *
+ * 另外 callable 对象允许加入拥有 __invoke 方法的 className
+ * 同时对 __construct 和 __invoke 进行依赖注入.
  *
  * @see \Illuminate\Container\BoundMethod
  */
 class BoundMethod
 {
+
+    /**
+     * @param $caller
+     * @return array|callable
+     */
+    public static function parseCaller($caller)
+    {
+        if (is_callable($caller)) {
+            return $caller;
+        }
+
+        if (
+            is_string($caller)
+            && class_exists($caller)
+            && method_exists($caller, '__invoke')
+        ) {
+            return [$caller, '__invoke'];
+        }
+
+        throw new \InvalidArgumentException(
+            'caller is not callable'
+        );
+    }
+
     /**
      * Call the given Closure / class@method and inject its dependencies.
      *
      * @param  ContainerContract  $container
-     * @param  callable|string  $callback
+     * @param  callable|string|array  $callback
      * @param  array  $parameters
      * @return mixed
      *
      * @throws \ReflectionException
      * @throws \InvalidArgumentException
      */
-    public static function call(ContainerContract $container, callable $callback, array $parameters = [])
+    public static function call(ContainerContract $container, $callback, array $parameters = [])
     {
         if (static::isClassNameWithNonStaticMethod($callback)) {
             $callback[0] = $container->make($callback[0]);
+        }
+
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('callback is not callable');
         }
 
         return call_user_func_array(
@@ -42,11 +74,11 @@ class BoundMethod
     }
 
     /**
-     * @param callable $caller
+     * @param mixed $caller
      * @return bool
      * @throws \ReflectionException
      */
-    public static function isClassNameWithNonStaticMethod(callable $caller) : bool
+    public static function isClassNameWithNonStaticMethod($caller) : bool
     {
         if (is_array($caller) && is_string($caller[0])) {
             $r = new ReflectionMethod($caller[0], $caller[1]);

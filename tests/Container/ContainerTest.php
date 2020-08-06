@@ -100,16 +100,20 @@ class ContainerTest extends TestCase
         $c = new Test();
         $c->instance(static::class, $this);
 
-        $invoker = new class {
-            public function __invoke(ContainerTest $test)
-            {
-                return $test;
-            }
-        };
+        $invoker = new Invoke();
 
         $i = $c->call($invoker);
         $this->assertTrue($i instanceof self);
+        $i = $c->call(Invoke::class);
+        $this->assertTrue($i instanceof self);
+    }
+}
 
+class Invoke {
+
+    public function __invoke(ContainerTest $test)
+    {
+        return $test;
     }
 }
 

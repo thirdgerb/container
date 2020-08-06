@@ -243,14 +243,15 @@ trait ContainerTrait
 
 
     /**
-     * @param callable $caller
+     * @param callable|string $caller
      * @param array $parameters
      * @return mixed
      * @throws \ReflectionException
      * @throws BindingResolutionException
      */
-    public function call(callable $caller, array $parameters = [])
+    public function call($caller, array $parameters = [])
     {
+        $caller = BoundMethod::parseCaller($caller);
         return BoundMethod::call($this, $caller, $parameters);
     }
 
