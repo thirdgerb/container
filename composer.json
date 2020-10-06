@@ -23,11 +23,11 @@
         }
     },
     "require": {
-        "php":"^7.2",
-        "psr/container": "^1.0"
+        "php":">=7.2",
+        "psr/container": "^1.0",
+        "illuminate/container": "^6.0"
     },
     "require-dev": {
-        "illuminate/container": "^6.0",
         "phpunit/phpunit": "^7.5"
     }
 }
